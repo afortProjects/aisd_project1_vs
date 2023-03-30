@@ -467,9 +467,12 @@ myString printOutAmmountOfSections(DoubleLinkedList<BlockListNode>& blockList) {
 
 myString printOutAmountOfSelectorsOfSection(int sectionIndex, DoubleLinkedList<BlockListNode>& blockList) {
     //todo: fix
-    SectionNode* temp = getSectionAsAPointer(sectionIndex, blockList);
-    if (temp == nullptr) return myString{""};
-    SelectorListNode* = temp->selectorList->headNode;
+    SectionNode* tempSection = getSectionAsAPointer(sectionIndex, blockList);
+    if (tempSection == nullptr) return myString{""};
+    DoubleLinkedList<SelectorListNode>* tempList = tempSection->selectorList;
+    if (tempList == nullptr) return myString{ "" };
+    SelectorListNode* temp = tempList->headNode;
+    if (temp == nullptr) return myString{ "" };
     int counter = 0;
 
     if (temp != NULL) {
@@ -497,10 +500,13 @@ myString printOutAmountOfSelectorsOfSection(int sectionIndex, DoubleLinkedList<B
 
 myString printOutAmountOfAttributesOfSection(int sectionIndex, DoubleLinkedList<BlockListNode>& blockList) {
     int counter = 0;
-    AttributeListNode* temp = getSectionAsAPointer(sectionIndex, blockList)->attributeList->headNode;
-    if (temp == nullptr) return myString(" ");
+    SectionNode* tempSection = getSectionAsAPointer(sectionIndex, blockList);
+    if (tempSection== nullptr) return myString{ "" };
+    DoubleLinkedList<AttributeListNode>* tempList = tempSection->attributeList;
+    if (tempList == nullptr) return myString{ "" };
+    AttributeListNode* temp = tempList->headNode;
+    if (temp == nullptr) return myString{ "" };
 
-    counter = 0;
     myString emptyString = { "" };
     if (temp != NULL) {
         while (temp != NULL) {
@@ -527,8 +533,12 @@ myString printOutAmountOfAttributesOfSection(int sectionIndex, DoubleLinkedList<
 
 myString printOutNSelectorOfSection(int selectorIndex, int sectionIndex, DoubleLinkedList<BlockListNode>& blockList) {
     int counter = 0;
-    SelectorListNode* temp = getSectionAsAPointer(sectionIndex, blockList)->selectorList->headNode;
-    if (temp == nullptr) return myString(" ");
+    SectionNode* tempSection = getSectionAsAPointer(sectionIndex, blockList);
+    if (tempSection == nullptr) return myString{ "" };
+    DoubleLinkedList < SelectorListNode > * tempList = tempSection->selectorList;
+    if (tempList == nullptr) return myString{ "" };
+    SelectorListNode* temp = tempList->headNode;
+    if (temp == nullptr) return myString{ "" };
 
     if (temp != NULL) {
         while (temp != NULL && counter != selectorIndex) {
@@ -558,8 +568,13 @@ myString printOutNSelectorOfSection(int selectorIndex, int sectionIndex, DoubleL
 myString printOutNAttributeOfSection(int sectionIndex, myString attributeName, DoubleLinkedList<BlockListNode>& blockList) {
     //todo: fixx section index 
     int counter = 0;
-    AttributeListNode* temp = getSectionAsAPointer(sectionIndex, blockList)->attributeList->headNode;
-    if (temp == nullptr) return myString(" ");
+    SectionNode* tempSection = getSectionAsAPointer(sectionIndex, blockList);
+    DoubleLinkedList<AttributeListNode>* tempList = tempSection->attributeList;
+    if (tempList == nullptr) return myString{ "" };
+    AttributeListNode* temp = tempList->headNode;
+
+    if (tempSection == nullptr) return myString{ "" };
+    if (temp == nullptr) return myString{ "" };
 
     if (temp != NULL) {
         while (temp != NULL && temp->name != attributeName) {
