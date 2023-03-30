@@ -169,6 +169,7 @@ struct BlockListNode {
     BlockListNode* next = NULL;
     SectionNode* sections = new SectionNode[AMOUNT_OF_BLOCKS_IN_BLOCK_LIST];
     int currentAmountOfSections = 0;
+    int amountOfSectionsWithoutDeletions = 0;
 };
 
 
@@ -327,24 +328,30 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
     myString attributeInput = { "" };
     myString input = { "" };
     bool wasNewSectionDetected = false;
-    while (cin >> character && input.str() != "????") {
+    while (cin >> character) {
+        if (character == '\n') return;
         input += character;
+        if (input == "????") {
+            return;
+        }
         if (character == '{') {
             wasNewSectionDetected = true;
         }
         else if (character == '}') {
             BlockListNode* currentBlock = blockList.getLastNode();
-            SectionNode currentSection = currentBlock->sections[currentBlock->currentAmountOfSections];
+            SectionNode currentSection = currentBlock->sections[currentBlock->amountOfSectionsWithoutDeletions];
             DoubleLinkedList<SelectorListNode>* selectorList = new DoubleLinkedList<SelectorListNode>;
             DoubleLinkedList<AttributeListNode>* attributeList = new DoubleLinkedList<AttributeListNode>;
             myString temp("");
             myString emptyString = { "" };
             int counter = 0;
 
-            if (currentBlock->currentAmountOfSections == 8) {
+            if (currentBlock->amountOfSectionsWithoutDeletions == 7) {
                 BlockListNode* newBlockListNode = new BlockListNode;
                 blockList.addNewBlockToList(newBlockListNode);
                 currentBlock = blockList.getLastNode();
+                currentSection = currentBlock->sections[currentBlock->amountOfSectionsWithoutDeletions];
+
             }
 
             for (int i = 0; i < selectorInput.length(); i++) {
@@ -402,6 +409,8 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
             currentSection.selectorList = selectorList;
             currentBlock->sections[currentBlock->currentAmountOfSections] = currentSection;
             currentBlock->currentAmountOfSections += 1;
+            currentBlock->amountOfSectionsWithoutDeletions += 1;
+
             wasNewSectionDetected = false;
             selectorInput = "";
             attributeInput = "";
@@ -409,10 +418,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
         if (character != '}' && character != '{') {
             wasNewSectionDetected == false ? selectorInput += character : attributeInput += character;
         }
-        if (input == "????") {
-            break;
-            return;
-        }
+
 
     }
     //printOutSelectorsAndAttributes(&blockList);
@@ -461,8 +467,9 @@ myString printOutAmmountOfSections(DoubleLinkedList<BlockListNode>& blockList) {
 
 myString printOutAmountOfSelectorsOfSection(int sectionIndex, DoubleLinkedList<BlockListNode>& blockList) {
     //todo: fix
-    SelectorListNode* temp = getSectionAsAPointer(sectionIndex, blockList)->selectorList->headNode;
+    SectionNode* temp = getSectionAsAPointer(sectionIndex, blockList);
     if (temp == nullptr) return myString{""};
+    SelectorListNode* = temp->selectorList->headNode;
     int counter = 0;
 
     if (temp != NULL) {
@@ -517,7 +524,6 @@ myString printOutAmountOfAttributesOfSection(int sectionIndex, DoubleLinkedList<
     }
     return myString{ "" };
 }
-
 
 myString printOutNSelectorOfSection(int selectorIndex, int sectionIndex, DoubleLinkedList<BlockListNode>& blockList) {
     int counter = 0;
@@ -768,19 +774,17 @@ bool isCharArrayANumber(const char* arr) {
 int main() {
     DoubleLinkedList<BlockListNode> blockList;
     char character;
-    bool flag = false;
     myString input = { "" };
     myString output = { "" };
     getCSSInput(blockList);
     while (cin >> character >> noskipws) {
-       if ((character == '\n' || character == ' ')) {
+       if ((character == '\n' || character == ' ') && input.str() != "\n") {
             if (input == "????") { 
                 input = "";
             }
             else if (input == "****") {
                 getCSSInput(blockList);
-                flag = true;
-                cout << flag;
+                //po tym nie wraca program
                 input = "";
             }
             else if (input == "?") {
@@ -837,7 +841,7 @@ int main() {
                     }
                 }
                 else if (secondParameter == "E") {
-                    if (!isFirstParameterNumber && !isThirdParameterNumber) {
+                    if (!isFirstParameterNumber && !isThirdParameterNumber) { 
                         output += printOutValueOfAttributeWithNameNForSelectorZ(firstParameter, thirdParameter, blockList);
                     }
                 }
