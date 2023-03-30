@@ -845,6 +845,7 @@ int main() {
                 }
                 else if (secondParameter == "A") {
                     if (thirdParameter == "?" && isFirstParameterNumber) {
+                        sectionIndex = atoi(firstParameter.str())-1;
                         output += printOutAmountOfAttributesOfSection(sectionIndex, blockList);
                     }
                     else if (isFirstParameterNumber && !isThirdParameterNumber) {
