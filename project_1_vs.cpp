@@ -356,7 +356,10 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
     bool wasNewSectionDetected = false;
     int wasNewAttributeDetected = 0;
     char spaceCharacter;
+    int counter = 0;
     myString input2 = { "" };
+    myString temp = { "" };
+
     while (cin >> noskipws >> character) {
         //cout << input;
         if (character != '\n' && character != ' ' && character != '\t') input += character;
@@ -373,8 +376,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
             SectionNode currentSection = currentBlock->sections[currentBlock->amountOfSectionsWithoutDeletions];
             DoubleLinkedList<SelectorListNode>* selectorList = new DoubleLinkedList<SelectorListNode>;
             DoubleLinkedList<AttributeListNode>* attributeList = new DoubleLinkedList<AttributeListNode>;
-            myString temp = { "" };
-            int counter = 0;
+            temp = "";
 
             if (currentBlock->amountOfSectionsWithoutDeletions == AMOUNT_OF_BLOCKS_IN_BLOCK_LIST - 1) {
                 BlockListNode* newBlockListNode = new BlockListNode;
@@ -402,7 +404,6 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
             temp = "";
 
             for (int i = 0; i < attributeInput.length(); i++) {
-                //todo: add handling for example + in css
                 if (attributeInput[i] == ';' || (i == attributeInput.length() - 1 && temp.str() != "")) {
                     if (i == attributeInput.length() - 1 && attributeInput[i] != ';') temp += attributeInput[i];
                     AttributeListNode* newNode = new AttributeListNode;
@@ -411,20 +412,20 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
                     myString name = { "" };
                     myString value = { "" };
                     bool isNameInputFinished = false;
-                    for (int j = counter; j < i; j++) {
-                        if (attributeInput[j] == ':') {
+
+                    for (int j = 0; j < temp.length(); j++) {
+                        if (temp[j] == ':') {
                             isNameInputFinished = true;
                         }
                         else {
-                            if (attributeInput[j] != ';')
-                                isNameInputFinished == false ? name += attributeInput[j] : value += attributeInput[j];
+                            if (temp[j] != ';')
+                                isNameInputFinished == false ? name += temp[j] : value += temp[j];
 
                         }
                     }
-                    counter = i;
 
-                    newNode->name = name;
-                    newNode->value = value;
+                    newNode->name = removeSpacesFromBeginningAndEndFromString(name);
+                    newNode->value = removeSpacesFromBeginningAndEndFromString(value);
 
                     attributeList->addNewBlockToList(newNode);
                     temp = "";
@@ -438,7 +439,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
             input = "";
             currentSection.attributeList = attributeList;
             currentSection.selectorList = selectorList;
-            currentBlock->sections[currentBlock->currentAmountOfSections] = currentSection;
+            currentBlock->sections[currentBlock->amountOfSectionsWithoutDeletions] = currentSection;
             currentBlock->currentAmountOfSections += 1;
             currentBlock->amountOfSectionsWithoutDeletions += 1;
 
@@ -446,6 +447,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
             wasNewSectionDetected = false;
             selectorInput = "";
             attributeInput = "";
+            counter = 0;
         }
         if (character != '}' && character != '{' && character != '\n' && character != '\t') {
             if (wasNewSectionDetected == false) { //removed checking if character == ' '
@@ -592,7 +594,7 @@ myString printOutAmountOfAttributesOfSection(int sectionIndex, DoubleLinkedList<
     myString emptyString = { "" };
     if (temp != NULL) {
         while (temp != NULL) {
-            if (temp->name.str() != "" && temp->value.str() != "")
+            if (temp->name.length() != 0 || temp->value.length() != 0)
                 counter++;
             temp = temp->next;
         }
@@ -690,11 +692,12 @@ myString printOutAmountOfAttributeOccurences(myString attributeName, DoubleLinke
         for (int i = 0; i < temp->amountOfSectionsWithoutDeletions; i++) {
             SectionNode currentSection = temp->sections[i];
             if (currentSection.wasDeleted == false) {
+                removeDuplicates(currentSection.attributeList);
+
                 AttributeListNode* currentAttributeListTemp = currentSection.attributeList->getLastNode();
                 while (currentAttributeListTemp != NULL) {
                     if (currentAttributeListTemp->name == attributeName) {
                         counter++;
-                        break;
                     };
                     currentAttributeListTemp = currentAttributeListTemp->prev;
                 }
@@ -717,10 +720,11 @@ myString printOutAmountOfAttributeOccurences(myString attributeName, DoubleLinke
 
 myString printOutAmountOfSelectorOccurences(myString selectorName, DoubleLinkedList<BlockListNode>& blockList) {
     BlockListNode* temp = blockList.headNode;
+    SectionNode currentSection;
     int counter = 0;
     while (temp != NULL) {
         for (int i = 0; i < temp->amountOfSectionsWithoutDeletions; i++) {
-            SectionNode currentSection = temp->sections[i];
+            currentSection = temp->sections[i];
             if (currentSection.wasDeleted == false) {
                 SelectorListNode* currentSelectorListTemp = currentSection.selectorList->getLastNode();
                 while (currentSelectorListTemp != NULL) {
@@ -750,6 +754,7 @@ myString printOutValueOfAttributeWithNameNForSelectorZ(myString selectorName, my
         for (int i = temp->amountOfSectionsWithoutDeletions - 1; i >= 0; i--) {
             if (temp->sections[i].wasDeleted == false) {
                 SelectorListNode* currentSelectorListTemp = temp->sections[i].selectorList->getLastNode();
+                removeDuplicates(temp->sections[i].attributeList);
                 AttributeListNode* currentAttributeListTemp = temp->sections[i].attributeList->getLastNode();
 
                 bool selectorFlag = false;
@@ -768,7 +773,7 @@ myString printOutValueOfAttributeWithNameNForSelectorZ(myString selectorName, my
                     currentAttributeListTemp = currentAttributeListTemp->prev;
                 }
 
-                if (selectorFlag && attributeFlag && currentAttributeListTemp != NULL) {
+                if (selectorFlag && attributeFlag && currentAttributeListTemp != NULL && currentAttributeListTemp->value.str() != "") {
                     myString returnValue = { "" };
                     returnValue += selectorName;
                     returnValue += { ",E," };
@@ -817,6 +822,9 @@ myString deleteSection(int sectionIndex, DoubleLinkedList<BlockListNode>& blockL
         temp->selectorList->headNode = NULL;
         temp->wasDeleted = true;
 
+        if (tempBlock->currentAmountOfSections == 0) {
+            return myString{ "" };
+        }
         tempBlock->currentAmountOfSections -= 1;
 
         char sectionIndexInChar[512];
@@ -934,6 +942,10 @@ void parseCommands(char& character, myString& output, myString& input, DoubleLin
 
                 }
             }
+            firstParameter = removeSpacesFromBeginningAndEndFromString(firstParameter);
+            secondParameter = removeSpacesFromBeginningAndEndFromString(secondParameter);
+            thirdParameter = removeSpacesFromBeginningAndEndFromString(thirdParameter);
+
             bool isFirstParameterNumber = isCharArrayANumber(firstParameter.str());
             bool isThirdParameterNumber = isCharArrayANumber(thirdParameter.str());
             int sectionIndex;
