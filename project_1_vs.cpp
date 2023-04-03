@@ -1,9 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include "string.h"
+#include <cstring>
+
 using namespace std;
 
 #define AMOUNT_OF_BLOCKS_IN_BLOCK_LIST 8
+#define STRING_BUFFER 50
 
 struct BlockListNode;
 struct SectionNode;
@@ -13,50 +16,83 @@ template<typename T> class DoubleLinkedList;
 
 
 
-class myString
-{
+class myString {
 private:
-    char* buffer = nullptr;
-    unsigned int size = 0;
+    char* buffer;
+    size_t size;
+    size_t capacity;
+
 public:
-    myString() : buffer(nullptr), size(0) {};
-
-    myString(const char* newBuffer) {
-        size = strlen(newBuffer);
-        buffer = new char[size + 1];
-        strcpy(buffer, newBuffer);
-    };
-
-    myString(const myString& stringObject)
-    {
-        size = stringObject.size;
-        buffer = new char[size + 1];
-        strcpy(buffer, stringObject.buffer);
+    myString() : buffer(nullptr), size(0), capacity(STRING_BUFFER) {
+        buffer = new char[capacity];
+        buffer[0] = '\0';
     }
 
-    myString(myString&& stringObject) noexcept
-    {
-        size = stringObject.size;
-        buffer = stringObject.buffer;
-        stringObject.buffer = nullptr;
-        stringObject.size = 0;
+    myString(const char* str) : buffer(nullptr), size(0), capacity(STRING_BUFFER) {
+        size_t strLength = strlen(str);
+        if (strLength > capacity) {
+            capacity = strLength + STRING_BUFFER;
+        }
+        buffer = new char[capacity];
+        strcpy(buffer, str);
+        size = strLength;
     }
 
+    ~myString() {
+        delete[] buffer;
+    }
 
-    myString& operator=(const myString& stringObject)
-    {
-        size = stringObject.size;
-        buffer = new char[size + 1];
-        strcpy(buffer, stringObject.buffer);
+    myString(const myString& other) : buffer(nullptr), size(0), capacity(other.size + STRING_BUFFER) {
+        *this = other;
+    }
+
+    myString& operator=(const myString& other) {
+        size = other.size;
+        capacity = other.capacity;
+        delete[] buffer;
+        buffer = new char[capacity];
+        strcpy(buffer, other.buffer);
         return *this;
     }
 
-    myString& operator=(myString&& stringObject) noexcept
-    {
-        size = stringObject.size;
-        buffer = stringObject.buffer;
-        stringObject.buffer = nullptr;
-        stringObject.size = 0;
+    myString& operator+=(const myString& other) {
+        size_t newsize = size + other.size;
+        if (newsize + 1 > capacity) {
+            capacity = newsize + STRING_BUFFER;
+            char* newBuffer = new char[capacity];
+            strcpy(newBuffer, buffer);
+            delete[] buffer;
+            buffer = newBuffer;
+        }
+        strcat(buffer, other.buffer);
+        size = newsize;
+        return *this;
+    }
+
+    myString& operator+=(const char& character) {
+        if (size + 2 > capacity) {
+            capacity += STRING_BUFFER;
+            char* newBuffer = new char[capacity];
+            strcpy(newBuffer, buffer);
+            delete[] buffer;
+            buffer = newBuffer;
+        }
+        buffer[size++] = character;
+        buffer[size] = '\0';
+        return *this;
+    }
+
+    myString& operator+=(const char* str) {
+        size_t strLength = strlen(str);
+        if (size + strLength + 1 > capacity) {
+            capacity = size + strLength + STRING_BUFFER;
+            char* newBuffer = new char[capacity];
+            strcpy(newBuffer, buffer);
+            delete[] buffer;
+            buffer = newBuffer;
+        }
+        strcat(buffer, str);
+        size += strLength;
         return *this;
     }
 
@@ -72,88 +108,20 @@ public:
         return strcmp(buffer, str.buffer) == 0;
     }
 
-    myString operator+(const char& character)
-    {
-        myString newString;
-        newString.size = this->size + 1;
-        newString.buffer = new char[newString.size + 1];
-
-        strcpy(newString.buffer, this->buffer);
-        newString.buffer[this->size] = character;
-        newString.buffer[this->size + 1] = '\0';
-
-        return newString;
+    size_t length() const {
+        return size;
     }
 
-    myString operator+(const myString& stringToConcatenate)
-    {
-        myString newString;
-        newString.size = this->size + stringToConcatenate.size;
-        newString.buffer = new char[newString.size + 1];
-        strcpy(newString.buffer, this->buffer);
-        strcat(newString.buffer, stringToConcatenate.buffer);
-        return newString;
+    const char* str() const {
+        return buffer;
     }
-
-    myString& operator+=(const char& character)
-    {
-        myString newString;
-        newString.size = this->size + 1;
-        newString.buffer = new char[newString.size + 1];
-
-        strcpy(newString.buffer, this->buffer);
-        newString.buffer[this->size] = character;
-        newString.buffer[this->size + 1] = '\0';
-
-        if (buffer != nullptr)
-            delete[] buffer;
-
-        this->size = newString.size;
-        this->buffer = new char[this->size + 1];
-        strcpy(this->buffer, newString.buffer);
-        return *this;
-    }
-
-    myString& operator+=(const myString& stringToConcatenate)
-    {
-        myString newString;
-        newString.size = this->size + stringToConcatenate.size;
-        newString.buffer = new char[newString.size + 1];
-        strcpy(newString.buffer, this->buffer);
-        strcat(newString.buffer, stringToConcatenate.buffer);
-
-        if (buffer != nullptr)
-            delete[] buffer;
-
-        this->size = newString.size;
-        this->buffer = new char[newString.size + 1];
-        strcpy(this->buffer, newString.buffer);
-        return *this;
-
-    }
-
     char operator[](const int index) {
         return this->buffer[index];
-    }
-
-    unsigned int length() {
-        return this->size;
-    }
-    const char* str() const {
-        return this->buffer;
     }
 
     friend ostream& operator<<(std::ostream& cout, const myString& obj) {
         cout << obj.str();
         return cout;
-    }
-
-
-    ~myString() {
-        if (buffer != nullptr) {
-            delete[] buffer;
-            size = 0;
-        }
     }
 };
 
@@ -272,10 +240,10 @@ template <class T> void printAttributeList(T* attributeList) {
     myString output = { "" };
     if (temp != NULL) {
         while (temp != NULL) {
-            output = output + temp->name;
-            output = output + ":";
-            output = output + temp->value;
-            output = output + " ";
+            output +=temp->name;
+            output += ":";
+            output += temp->value;
+            output += " ";
             temp = temp->next;
         }
     }
@@ -291,8 +259,8 @@ template <class T> void printSelectorList(T* selectorList) {
     myString output = { "" };
     if (temp != NULL) {
         while (temp != NULL) {
-            output = output + temp->name;
-            output = output + " ";
+            output += temp->name;
+            output += " ";
             temp = temp->next;
         }
     }
@@ -332,14 +300,13 @@ bool checkIfStringIsNotFullOfSpaces(myString str) {
 
 myString removeSpacesFromBeginningAndEndFromString(myString& str) {
     myString newStr = { "" };
-    bool flag = false;
-    int start=0, end=str.length()-1;
+    int start = 0, end = str.length() - 1;
 
     for (int i = 0; i < str.length(); i++) {
-        if (str[i] != ' ') { start = i; break; };
+        if (str[i] > ' ') { start = i; break; };
     }
-    for (int i = str.length()-1; i >= 0; i--) {
-        if (str[i] != ' ') { end = i; break; };
+    for (int i = str.length() - 1; i >= 0; i--) {
+        if (str[i] > ' ') { end = i; break; };
     }
     for (int i = start; i <= end; i++) {
         newStr += str[i];
@@ -364,6 +331,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
         //cout << input;
         if (character != '\n' && character != ' ' && character != '\t') input += character;
         if (character == EOF) return;
+        if (character < ' ' || character == 13) continue;
         //input += character;
         if (input == "????") {
             return;
@@ -388,7 +356,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
 
             for (int i = 0; i < selectorInput.length(); i++) {
                 //todo: add handling for example + in css
-                if ((selectorInput[i] == ',' || (i == selectorInput.length() - 1 && temp.str() != ""))) {
+                if ((selectorInput[i] == ',' || (i == selectorInput.length() - 1))) {
                     if (selectorInput.length() - 1 == i) temp += selectorInput[i];
                     SelectorListNode* newNode = new SelectorListNode;
                     newNode->next = nullptr;
@@ -404,7 +372,7 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
             temp = "";
 
             for (int i = 0; i < attributeInput.length(); i++) {
-                if (attributeInput[i] == ';' || (i == attributeInput.length() - 1 && temp.str() != "")) {
+                if (attributeInput[i] == ';' || (i == attributeInput.length() - 1)) {
                     if (i == attributeInput.length() - 1 && attributeInput[i] != ';') temp += attributeInput[i];
                     AttributeListNode* newNode = new AttributeListNode;
                     newNode->next = nullptr;
@@ -464,7 +432,6 @@ void getCSSInput(DoubleLinkedList<BlockListNode>& blockList) {
     //printOutBlockList(&blockList);
 }
 
-
 SectionNode* getSectionAsAPointer(int sectionIndex, DoubleLinkedList<BlockListNode>& blockList) {
     int counter = 0;
     BlockListNode* blockListTemp = blockList.headNode;
@@ -472,12 +439,13 @@ SectionNode* getSectionAsAPointer(int sectionIndex, DoubleLinkedList<BlockListNo
     while (blockListTemp != nullptr) {
         for (int i = 0; i < blockListTemp->amountOfSectionsWithoutDeletions; i++) {
             if (blockListTemp->sections[i].wasDeleted == false) {
-                if (sectionIndex == counter) {
-                    desiredSection = &(blockListTemp->sections[i]);
-                    return desiredSection;
+                //Check if attribute list is not empty
+                    if (sectionIndex == counter) {
+                        desiredSection = &(blockListTemp->sections[i]);
+                        return desiredSection;
+                    }
+                    counter++;
                 }
-                counter++;
-            }
 
         }
         blockListTemp = blockListTemp->next;
@@ -727,6 +695,7 @@ myString printOutAmountOfSelectorOccurences(myString selectorName, DoubleLinkedL
             currentSection = temp->sections[i];
             if (currentSection.wasDeleted == false) {
                 SelectorListNode* currentSelectorListTemp = currentSection.selectorList->getLastNode();
+                DoubleLinkedList<AttributeListNode>* currentAttrList = currentSection.attributeList;
                 while (currentSelectorListTemp != NULL) {
                     if (currentSelectorListTemp->name == selectorName) { counter++; break; };
                     currentSelectorListTemp = currentSelectorListTemp->prev;
@@ -909,6 +878,14 @@ bool isCharArrayANumber(const char* arr) {
     return true;
 }
 
+int amountOfComasInString(myString str) {
+    int counter = 0;
+    for (int i = 0; i < str.length(); i++) {
+        if (str[i] == ',') counter++;
+    }
+    return counter;
+}
+
 void parseCommands(char& character, myString& output, myString& input, DoubleLinkedList<BlockListNode>& blockList, bool flag) {
     if ((character == '\n' || character == ' ' || character == '\t' || character == EOF || flag)) {
         if (input == "????") {
@@ -923,7 +900,8 @@ void parseCommands(char& character, myString& output, myString& input, DoubleLin
             output += printOutAmmountOfSections(blockList);
             input = "";
         }
-        else {
+        else if (amountOfComasInString(input) == 2) {
+            input = removeSpacesFromBeginningAndEndFromString(input);
             myString firstParameter = { "" };
             myString secondParameter = { "" };
             myString thirdParameter = { "" };
@@ -1018,7 +996,7 @@ int main() {
     bool flag = false;
     //Flag is used to not write \n many times in a row
     for (int i = 0; i < output.length(); i++) {
-        if (output[i] != '\n' && output[i] != '|' && output[i] != '/' && output[i] != '\t') {
+        if (output[i] != '\n' && output[i] != '|'  && output[i] != '\t') { //&& output[i] != '/'
             cout << output[i];
             flag = true;
         }
