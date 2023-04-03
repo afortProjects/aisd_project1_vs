@@ -240,7 +240,7 @@ template <class T> void printAttributeList(T* attributeList) {
     myString output = { "" };
     if (temp != NULL) {
         while (temp != NULL) {
-            output +=temp->name;
+            output += temp->name;
             output += ":";
             output += temp->value;
             output += " ";
@@ -440,12 +440,12 @@ SectionNode* getSectionAsAPointer(int sectionIndex, DoubleLinkedList<BlockListNo
         for (int i = 0; i < blockListTemp->amountOfSectionsWithoutDeletions; i++) {
             if (blockListTemp->sections[i].wasDeleted == false) {
                 //Check if attribute list is not empty
-                    if (sectionIndex == counter) {
-                        desiredSection = &(blockListTemp->sections[i]);
-                        return desiredSection;
-                    }
-                    counter++;
+                if (sectionIndex == counter) {
+                    desiredSection = &(blockListTemp->sections[i]);
+                    return desiredSection;
                 }
+                counter++;
+            }
 
         }
         blockListTemp = blockListTemp->next;
@@ -887,7 +887,7 @@ int amountOfComasInString(myString str) {
 }
 
 void parseCommands(char& character, myString& output, myString& input, DoubleLinkedList<BlockListNode>& blockList, bool flag) {
-    if ((character == '\n' || character == ' ' || character == '\t' || character == EOF || flag)) {
+    if ((character == '\n' || character == '\t' || character == EOF || flag)) {
         if (input == "????") {
             input = "";
         }
@@ -973,7 +973,7 @@ void parseCommands(char& character, myString& output, myString& input, DoubleLin
         output += '|';
         input = "";
     }
-    else if (character != '\n' && character != ' ' && character != '\t' && !flag) {
+    else if (character != '\n' && character != '\t' && !flag) {
         input += character;
     }
 }
@@ -996,7 +996,7 @@ int main() {
     bool flag = false;
     //Flag is used to not write \n many times in a row
     for (int i = 0; i < output.length(); i++) {
-        if (output[i] != '\n' && output[i] != '|'  && output[i] != '\t') { //&& output[i] != '/'
+        if (output[i] != '\n' && output[i] != '|' && output[i] != '\t') { //&& output[i] != '/'
             cout << output[i];
             flag = true;
         }
