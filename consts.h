@@ -1,0 +1,5 @@
+#pragma once
+#define AMOUNT_OF_BLOCKS_IN_BLOCK_LIST 8
+#define STRING_BUFFER 50
+#define INT_TO_CHAR_BUFFER 512
+#define ENTER_BUTTON 13
