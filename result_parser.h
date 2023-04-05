@@ -6,7 +6,7 @@
 class ResultParser {
 public:
 	DoubleLinkedList<BlockListNode> blockList;
-	myString output;;
+	myString output;
 
 	SectionNode* getSectionFromIndex(int sectionIndex);
 	BlockListNode* getBlockOfSection(int sectionIndex);

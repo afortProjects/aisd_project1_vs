@@ -1,7 +1,8 @@
 #include "input_parser.h"
 using namespace std;
 
-InputParser::InputParser(DoubleLinkedList<BlockListNode>& newBlockList) : blockList(newBlockList) {
+InputParser::InputParser(DoubleLinkedList<BlockListNode>& newBlockList) {
+    this->blockList = newBlockList;
     ResultParser newResultParser = { this->blockList };
     this->resultParser = newResultParser;
 }

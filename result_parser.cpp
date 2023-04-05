@@ -369,6 +369,7 @@ void ResultParser::deleteSectionWithProvidedAttributeName(int sectionIndex, mySt
             if (tempAttrListHeadNode->next != nullptr)
                 tempAttrListHeadNode->next->prev = tempAttrListHeadNode->prev;
             tempAttrListHeadNode = nullptr;
+
             wasThereDeletion = true;
             break;
         }

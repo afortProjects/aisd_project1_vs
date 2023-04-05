@@ -81,14 +81,5 @@ public:
         return true;
     }
 
-    //~DoubleLinkedList() {
-    //    StructNode* currentNode = this->headNode;
-    //    while (currentNode != nullptr) {
-    //        StructNode* tempNode = currentNode->next;
-    //        delete currentNode;
-    //        currentNode = tempNode;
-    //    }
-    //    //delete this->headNode;
-    //}
-
+    ~DoubleLinkedList() {}
 };
